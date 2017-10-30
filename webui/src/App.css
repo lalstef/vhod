@@ -1,0 +1,80 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 60px;
+  padding: 10px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.content {
+    margin: 16px;
+}
+
+.content table {
+    text-align: left;
+    border: 1px solid black;
+    border-spacing: 0;
+}
+
+.content table tr.bill-paid td {
+    background-color: darkseagreen;
+}
+
+.content table tr.bill-not-paid td {
+    background-color: indianred;
+}
+
+.content table tr td.bill-paid {
+    background-color: darkseagreen;
+}
+
+.content table tr td.bill-not-paid {
+    background-color: indianred;
+}
+
+.content table th, td {
+    border: 1px solid black;
+    padding: 3px 5px;
+}
+
+.content table td.appartment-number {
+    font-weight: bold;
+    text-align: center;
+}
+
+.sidebar {
+    width: 150px;
+    float: left;
+}
+
+.sidebar ul {
+    list-style: none;
+    text-align: left;
+}
+
+.sidebar ul li {
+    padding: 5px 10px;
+}
+
+
