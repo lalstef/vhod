@@ -1,42 +1,91 @@
 import React, { Component } from 'react';
+import { Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import moment from 'moment';
+import Api from '../Api';
 
 
 class OverallYearlyBillsView extends Component {
-    render() {
-        let appartments = {
-            '85': [{'amount': '13.03', 'paid': true}, {'amount': '13.03', 'paid': true}, {'amount': '13.03', 'paid': false}, {'amount': '13.03', 'paid': false} ],
-            '86': [{'amount': '13.03', 'paid': true}, {'amount': '13.03', 'paid': true}, {'amount': '13.03', 'paid': true}, {'amount': '13.03', 'paid': true} ],
-            '87': [{'amount': '13.03', 'paid': true}, {'amount': '13.03', 'paid': false}, {'amount': '13.03', 'paid': false}, {'amount': '13.03', 'paid': false} ],
-            '88': [{'amount': '13.03', 'paid': false}, {'amount': '13.03', 'paid': false}, {'amount': '13.03', 'paid': false}, {'amount': '13.03', 'paid': false} ],
-            '89': [{'amount': '13.03', 'paid': true}, {'amount': '13.03', 'paid': true}, {'amount': '13.03', 'paid': true}, {'amount': '13.03', 'paid': true} ],
-        };
+    constructor(props) {
+        super(props);
+        this.state = {year: props.match.params.year || moment().year(), appartments_elements: []};
+    }
 
+    componentWillReceiveProps(props) {
+        this.setState({year: props.match.params.year || moment().year()});
+    }
 
-        var appartments_elements = [];
+    setYear(year) {
+        let self = this;
+        this.setState({year: year}, this.update);
 
-        for (let app_number in appartments) {
-            let app_bills = appartments[app_number],
-                row = [];
+        Api.getYearlyBills(year)
+          .then(data => {
+                let appartments_elements = [];
 
-            for (let i in app_bills) {
-                let bill = app_bills[i],
-                    paid_class = 'bill-not-paid';
+                for (let app_number in data) {
+                    let app_bills = data[app_number],
+                        row = [];
 
-                if (bill.paid) {
-                    paid_class = 'bill-paid';
+                    for (let i in app_bills) {
+                        let bill = app_bills[i],
+                            paid_class = 'bill-not-paid';
+
+                        if (bill.paid_date !== null) {
+                            paid_class = 'bill-paid';
+                        }
+
+                        row.push(<td key={i} className={ paid_class }>{ bill.amount }</td>);
+                    }
+
+                    appartments_elements.push(<tr key={ app_number }><td>{ app_number }</td>{ row }</tr>);
+
                 }
+              self.setState({appartments_elements: appartments_elements});
+          });
+    }
 
-                row.push(<td key={i} className={ paid_class }>{ bill.amount }</td>);
-                console.log(row);
-            }
+    componentDidMount() {
+        let self = this;
 
-            appartments_elements.push(<tr key={ app_number }><td>{ app_number }</td>{ row }</tr>);
+        Api.getYearlyBills(this.state.year)
+          .then(data => {
+                let appartments_elements = [];
 
-        }
+                for (let app_number in data) {
+                    let app_bills = data[app_number],
+                        row = [];
 
+                    for (let i in app_bills) {
+                        let bill = app_bills[i],
+                            paid_class = 'bill-not-paid';
+
+                        if (bill.paid_date !== null) {
+                            paid_class = 'bill-paid';
+                        }
+
+                        row.push(<td key={i} className={ paid_class }>{ bill.amount }</td>);
+                    }
+
+                    appartments_elements.push(<tr key={ app_number }><td>{ app_number }</td>{ row }</tr>);
+
+                }
+              self.setState({appartments_elements: appartments_elements});
+          });
+    }
+
+    render() {
         return (
             <div>
-                <h3>Юли, 2017</h3>
+                <h3>{this.state.year} г.</h3>
+                <div className="sidebar">
+                    <div>
+                        <Link to={`/bills/year/${2016}/`} onClick={this.setYear.bind(this, 2016)}>2016 г.</Link>
+                        &nbsp;&nbsp;
+                        <Link to={`/bills/year/${2017}/`} onClick={this.setYear.bind(this, 2017)}>2017 г.</Link>
+                    </div>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
@@ -56,7 +105,7 @@ class OverallYearlyBillsView extends Component {
                         </tr>
                     </thead>
                     <tbody>
-                        { appartments_elements }
+                        { this.state.appartments_elements }
                     </tbody>
                 </table>
             </div>

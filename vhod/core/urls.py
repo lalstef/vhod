@@ -15,8 +15,17 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from rest_framework import routers
+from vhod.api.resources import ListBills, ListAppartmentBills, ListMonthlyBills
+
+router = routers.DefaultRouter()
 
 urlpatterns = [
-    url(r'^grappelli/', include('grappelli.urls')), # grappelli URLS
+    url(r'^api/', include(router.urls)),
+    url(r'^api/bills/(?P<year>\d+)/appartment/(?P<appartment>\d+)', ListAppartmentBills.as_view()),
+    url(r'^api/bills/year/(?P<year>\d+)/month/(?P<month>\d+)', ListMonthlyBills.as_view()),
+    url(r'^api/bills', ListBills.as_view()),
+    url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', admin.site.urls),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

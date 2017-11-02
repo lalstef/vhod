@@ -1,127 +1,104 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
+import moment from 'moment';
+import Api from '../Api';
 
 
 class OverallMonthlyBillsView extends Component {
-    render() {
-        let appartments = [
-            {
-                'number': '84',
-                'number_habitants': '4',
-                'bill_paid': false,
-                'bills': {
-                    'cleaning': '3.20',
-                    'elevator_maintenance': '0',
-                    'elevator_electricity': '0',
-                    'electricity_stairs': '0.33',
-                    'maintenance': '6.48',
-                    'total': '13.54',
-                }
-            },            {
-                'number': '85',
-                'number_habitants': '2',
-                'bill_paid': true,
-                'bills': {
-                    'cleaning': '3.20',
-                    'elevator_maintenance': '0',
-                    'elevator_electricity': '0',
-                    'electricity_stairs': '0.33',
-                    'maintenance': '6.40',
-                    'total': '9.93',
-                }
-            },
-            {
-                'number': '86',
-                'number_habitants': '2',
-                'bill_paid': true,
-                'bills': {
-                    'cleaning': '3.20',
-                    'elevator_maintenance': '0',
-                    'elevator_electricity': '0',
-                    'electricity_stairs': '0.33',
-                    'maintenance': '4.74',
-                    'total': '8.27',
-                }
-            },
-            {
-                'number': '87',
-                'number_habitants': '2',
-                'bill_paid': true,
-                'bills': {
-                    'cleaning': '3.20',
-                    'elevator_maintenance': '0',
-                    'elevator_electricity': '0',
-                    'electricity_stairs': '0.33',
-                    'maintenance': '3.38',
-                    'total': '6.91',
-                }
-            },
-            {
-                'number': '88',
-                'number_habitants': '3',
-                'bill_paid': false,
-                'bills': {
-                    'cleaning': '4.80',
-                    'elevator_maintenance': '0',
-                    'elevator_electricity': '0',
-                    'electricity_stairs': '0.49',
-                    'maintenance': '6.40',
-                    'total': '11.69',
-                }
-            },
-            {
-                'number': '89',
-                'number_habitants': '2',
-                'bill_paid': true,
-                'bills': {
-                    'cleaning': '3.20',
-                    'elevator_maintenance': '4.55',
-                    'elevator_electricity': '1.97',
-                    'electricity_stairs': '0.33',
-                    'maintenance': '4.74',
-                    'total': '14.79',
-                }
-            },
-            {
-                'number': '90',
-                'number_habitants': '1',
-                'bill_paid': false,
-                'bills': {
-                    'cleaning': '0',
-                    'elevator_maintenance': '0',
-                    'elevator_electricity': '0',
-                    'electricity_stairs': '0',
-                    'maintenance': '3.38',
-                    'total': '3.38',
-                }
-            },
-        ];
-        var appartments_elements = [];
 
-        for (let app_number in appartments) {
-            let app = appartments[app_number],
-                paid_class = 'bill-not-paid';
+    constructor(props) {
+        super(props);
 
-            if (app.bill_paid) {
-                paid_class = 'bill-paid';
-            }
+        this.state = {
+            month: props.match.params.month || moment().month(),
+            year: props.match.params.year || moment().year(),
+            appartments_elements: []
+        };
 
-            appartments_elements.push(
-                <tr key={app_number} className={ paid_class }>
-                    <td className="appartment-number">{ app.number }</td>
-                    <td>{ app.number_habitants }</td>
-                    <td>{ app.bills.cleaning }</td>
-                    <td>{ app.bills.elevator_maintenance }</td>
-                    <td>{ app.bills.elevator_electricity }</td>
-                    <td>{ app.bills.electricity_stairs }</td>
-                    <td>{ app.bills.maintenance }</td>
-                    <td>{ app.bills.total }</td>
-                </tr>
+        this.months_elements = [];
+
+        this.MONTH_NAMES = ["Януари", "Февруари", "Март", "Април", "Май", "Юни", "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"];
+
+        for (let month in this.MONTH_NAMES) {
+            let monthName = this.MONTH_NAMES[month];
+
+            this.months_elements.push(
+              <li key={month} className="appartment-link">
+                  <Link to={`/bills/year/${this.state.year}/month/${month}`} onClick={this.setMonth.bind(this, {month})}>{ monthName }</Link>
+              </li>
             );
         }
+    }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            year: nextProps.match.params.year,
+            month: nextProps.match.params.month
+        });
+    }
+
+    setYear(year) {
+        this.setState({year: year}, this.update);
+    }
+
+    setMonth(month) {
+        this.setState({month: month}, this.update);
+    }
+
+    componentDidMount() {
+        this.update();
+    }
+
+    update() {
+        let self = this;
+
+        Api.getMonthlyBills(this.state.year, this.state.month)
+          .then(data => {
+                    let appartments_elements = [];
+
+                    for (let app_number in data) {
+                        let app = data[app_number],
+                            paid_class = 'bill-not-paid';
+
+                        if (app.bill_paid) {
+                            paid_class = 'bill-paid';
+                        }
+
+                        appartments_elements.push(
+                            <tr key={app_number} className={ paid_class }>
+                                <td className="appartment-number">{ app.number }</td>
+                                <td>{ app.number_habitants }</td>
+                                <td>{ app.bills.cleaning }</td>
+                                <td>{ app.bills.elevator_maintenance }</td>
+                                <td>{ app.bills.elevator_electricity }</td>
+                                <td>{ app.bills.electricity_stairs }</td>
+                                <td>{ app.bills.maintenance }</td>
+                                <td>{ app.bills.total }</td>
+                            </tr>
+                        );
+                    }
+              self.setState({appartments_elements: appartments_elements});
+          });
+    }
+
+    render() {
         return (
             <div>
-                <h3>Юли, 2017</h3>
+                <h3>Месечни сметки за м. { this.MONTH_NAMES[this.state.month] }, { this.state.year } г.</h3>
+                <div className="sidebar">
+                    <div>
+                        <Link to={`/bills/year/${2016}/month/${this.state.month}`} onClick={this.setYear.bind(this, 2016)}>2016 г.</Link>
+                        &nbsp;&nbsp;
+                        <Link to={`/bills/year/${2017}/month/${this.state.month}`} onClick={this.setYear.bind(this, 2017)}>2017 г.</Link>
+                    </div>
+
+                    <br />
+
+                    <ul className="sidebar-menu">
+                        { this.months_elements }
+                    </ul>
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -136,7 +113,7 @@ class OverallMonthlyBillsView extends Component {
                         </tr>
                     </thead>
                     <tbody>
-                        { appartments_elements }
+                        { this.state.appartments_elements }
                     </tbody>
                 </table>
             </div>

@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -8,8 +10,11 @@ class Entrance(models.Model):
 
 
 class RecurringBillType(models.Model):
+    RECURRING_BILL_TYPE_CLEANING = 1
     RECURRING_BILL_TYPE_ELEVATOR_MAINTENANCE = 2
     RECURRING_BILL_TYPE_ELEVATOR_ELECTRICITY = 3
+    RECURRING_BILL_TYPE_ELECTRICITY_STAIRS = 4
+    RECURRING_BILL_TYPE_MAINTENANCE = 5
 
     name = models.CharField(max_length=256)
 
@@ -18,7 +23,7 @@ class RecurringBillType(models.Model):
 
 
 class Appartment(models.Model):
-    number = models.CharField(max_length=3, help_text="Номер на апартамента")
+    number = models.PositiveIntegerField(help_text="Номер на апартамента")
     floor = models.PositiveSmallIntegerField(help_text="Етаж")
     area = models.FloatField(help_text="Площ на апартамента", null=True, blank=True)
     common_part_percent = models.FloatField(help_text="Процент идеални части")
@@ -28,7 +33,7 @@ class Appartment(models.Model):
     notes = models.TextField(help_text="Бележки", null=True, blank=True)
 
     def __str__(self):
-        return self.number
+        return '{}'.format(self.number)
 
     def should_pay_bill(self, bill_type):
         if (bill_type.id == RecurringBillType.RECURRING_BILL_TYPE_ELEVATOR_MAINTENANCE
@@ -82,9 +87,21 @@ class RecurringBillAppartment(models.Model):
     type = models.ForeignKey("RecurringBillType")
     amount = models.FloatField(help_text="Сума")
     for_month = models.DateField(help_text="Месец/Година")
+    year = models.PositiveIntegerField(help_text="Година")
+    month = models.PositiveIntegerField(help_text="Месец")
+    paid_date = models.DateField(help_text="Дата на плащане", null=True, blank=True)
 
     def __str__(self):
         return "Ап.{} ({}): {} лв, {:%B %Y}".format(self.appartment, self.type.name, self.amount, self.for_month)
+
+    def is_paid(self):
+        return self.paid_date is not None
+
+    def get_monthly_bills(self, year, month):
+        return RecurringBill.objects\
+            .filter(for_month=datetime.datetime(year, month, 1))\
+            .order_by(self.appartment.number)
+
 
 
 class RecurringBill(models.Model):
@@ -95,7 +112,7 @@ class RecurringBill(models.Model):
     def __str__(self):
         return "{}: {} лв, {:%B %Y}".format(self.type.name, self.amount, self.for_month)
 
-    def calculate_appartment_bills(self):
+    def calculate_appartment_bills(self, create_records=False):
         appartment_bills = []
 
         if self.type == RecurringBillType.RECURRING_BILL_TYPE_ELEVATOR_MAINTENANCE:
@@ -126,6 +143,9 @@ class RecurringBill(models.Model):
                     for_month=self.for_month
                 )
             )
+
+        if create_records:
+            RecurringBillAppartment.objects.bulk_create(appartment_bills)
         return appartment_bills
 
     def __str__(self):
@@ -135,6 +155,5 @@ class RecurringBill(models.Model):
 @receiver(post_save, sender=RecurringBill)
 def calculate_appartment_bills(sender, **kwargs):
     bill = kwargs['instance']
-    print(bill, bill.type, bill.amount, bill.for_month)
     appartment_bills = bill.calculate_appartment_bills()
     RecurringBillAppartment.objects.bulk_create(appartment_bills)

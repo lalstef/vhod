@@ -13,8 +13,13 @@ class AppartmentAdmin(admin.ModelAdmin):
 class RecurringBillTypeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
 
+
 class RecurringBillAppartmentAdmin(admin.ModelAdmin):
     list_display = ('appartment', 'type', 'amount', 'for_month')
+
+
+class RecurringBillAdmin(admin.ModelAdmin):
+    list_display = ('type', 'amount', 'for_month')
 
 
 admin.site.register(Entrance)
@@ -23,5 +28,5 @@ admin.site.register(AppartmentHabitants)
 admin.site.register(Managers)
 admin.site.register(AppartmentBill)
 admin.site.register(RecurringBillType, RecurringBillTypeAdmin)
-admin.site.register(RecurringBill)
+admin.site.register(RecurringBill, RecurringBillAdmin)
 admin.site.register(RecurringBillAppartment, RecurringBillAppartmentAdmin)
