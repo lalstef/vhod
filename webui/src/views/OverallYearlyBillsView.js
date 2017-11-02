@@ -64,7 +64,7 @@ class OverallYearlyBillsView extends Component {
                             paid_class = 'bill-paid';
                         }
 
-                        row.push(<td key={i} className={ paid_class }>{ bill.amount }</td>);
+                        row.push(<td key={i} className={ paid_class }>{ Number(bill.amount, 2) }</td>);
                     }
 
                     appartments_elements.push(<tr key={ app_number }><td>{ app_number }</td>{ row }</tr>);

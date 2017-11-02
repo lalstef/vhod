@@ -10,6 +10,7 @@ class AppartmentBillsView extends Component {
         super(props);
 
         this.FIRST_APPARTMENT = 84;
+        this.APPARTMENTS = [84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103];
 
         this.state = {
             year: props.match.params.year || moment().year(),
@@ -17,24 +18,6 @@ class AppartmentBillsView extends Component {
             monthly_bills_elements: [],
             appartments_elements: []
         };
-
-
-        this.APPARTMENTS = [84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103];
-        let classCurrent = '';
-
-        let appartments_elements = [];
-        for (let i in this.APPARTMENTS) {
-            let app_number = this.APPARTMENTS[i];
-            classCurrent = (app_number === Number(this.state.appartment_number)) ? 'current' : '';
-
-            appartments_elements.push(
-              <li key={app_number} className={`appartment-link ${classCurrent}`}>
-                  <Link to={`/bills/year/${this.state.year}/appartment/${app_number}`}>Ап. { app_number }</Link>
-              </li>
-            );
-        }
-
-        this.state.appartments_elements = appartments_elements;
     }
 
     componentDidMount() {
@@ -64,6 +47,21 @@ class AppartmentBillsView extends Component {
 
     update() {
         let self = this;
+        let classCurrent = '';
+
+        let appartments_elements = [];
+        for (let i in this.APPARTMENTS) {
+            let app_number = this.APPARTMENTS[i];
+            classCurrent = (app_number === Number(this.state.appartment_number)) ? 'current' : '';
+
+            appartments_elements.push(
+              <li key={app_number} className={`appartment-link ${classCurrent}`}>
+                  <Link to={`/bills/year/${this.state.year}/appartment/${app_number}`}>Ап. { app_number }</Link>
+              </li>
+            );
+        }
+
+        this.state.appartments_elements = appartments_elements;
 
 
         let MONTHS = [
@@ -84,7 +82,7 @@ class AppartmentBillsView extends Component {
                     monthly_bills_elements.push(
                       <tr key={i} className={ paid_class }>
                           <td>{ MONTHS[i] }</td>
-                          <td>{ bill.total }</td>
+                          <td>{ Number(bill.total, 2) }</td>
                           <td>{ bill.habitants }</td>
                           <td>{ bill.cleaning }</td>
                           <td>{ bill.elevator_maintenance }</td>

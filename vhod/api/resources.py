@@ -28,7 +28,7 @@ class ListBills(APIView):
                 bills_structured[appartment_number] = []
             bills_structured[appartment_number].append({
                 'month': bill['month'],
-                'amount': '{:0.2f}'.format(bill['amount']),
+                'amount': round(bill['amount'], 2),
                 'paid_date': bill.get('paid_date')
             })
 
@@ -52,6 +52,7 @@ class ListMonthlyBills(APIView):
 
         for bill in bills:
             app_number = bill.appartment.number
+            amount = round(bill.amount, 2)
 
             if app_number not in bills_structured:
                 bills_structured[app_number] = {
@@ -68,18 +69,18 @@ class ListMonthlyBills(APIView):
                     },
                 }
 
-            bills_structured[app_number]['bills']['total'] += bill.amount
+            bills_structured[app_number]['bills']['total'] += amount
 
             if bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_CLEANING:
-                bills_structured[app_number]['bills']['cleaning'] = bill.amount
+                bills_structured[app_number]['bills']['cleaning'] = amount
             elif bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_ELEVATOR_ELECTRICITY:
-                bills_structured[app_number]['bills']['elevator_electricity'] = bill.amount
+                bills_structured[app_number]['bills']['elevator_electricity'] = amount
             elif bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_ELEVATOR_MAINTENANCE:
-                bills_structured[app_number]['bills']['elevator_maintenance'] = bill.amount
+                bills_structured[app_number]['bills']['elevator_maintenance'] = amount
             elif bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_ELECTRICITY_STAIRS:
-                bills_structured[app_number]['bills']['electricity_stairs'] = bill.amount
+                bills_structured[app_number]['bills']['electricity_stairs'] = amount
             elif bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_MAINTENANCE:
-                bills_structured[app_number]['bills']['maintenance'] = bill.amount
+                bills_structured[app_number]['bills']['maintenance'] = amount
 
         return Response(bills_structured)
 
@@ -99,19 +100,20 @@ class ListAppartmentBills(APIView):
             .order_by('month')
 
         for bill in bills:
+            amount = round(bill.amount, 2)
             month = bill.for_month.month - 1
             bills_structured[month]['paid'] = bill.paid_date is not None
-            bills_structured[month]['total'] += bill.amount
+            bills_structured[month]['total'] += amount
 
             if bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_CLEANING:
-                bills_structured[month]['cleaning'] = bill.amount
+                bills_structured[month]['cleaning'] = amount
             elif bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_ELEVATOR_ELECTRICITY:
-                bills_structured[month]['elevator_electricity'] = bill.amount
+                bills_structured[month]['elevator_electricity'] = amount
             elif bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_ELEVATOR_MAINTENANCE:
-                bills_structured[month]['elevator_maintenance'] = bill.amount
+                bills_structured[month]['elevator_maintenance'] = amount
             elif bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_ELECTRICITY_STAIRS:
-                bills_structured[month]['electricity_stairs'] = bill.amount
+                bills_structured[month]['electricity_stairs'] = amount
             elif bill.type.id == RecurringBillType.RECURRING_BILL_TYPE_MAINTENANCE:
-                bills_structured[month]['maintenance'] = bill.amount
+                bills_structured[month]['maintenance'] = amount
 
         return Response(bills_structured)

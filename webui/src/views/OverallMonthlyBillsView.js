@@ -16,26 +16,14 @@ class OverallMonthlyBillsView extends Component {
             appartments_elements: []
         };
 
-        this.months_elements = [];
-
         this.MONTH_NAMES = ["Януари", "Февруари", "Март", "Април", "Май", "Юни", "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"];
-
-        for (let month in this.MONTH_NAMES) {
-            let monthName = this.MONTH_NAMES[month];
-
-            this.months_elements.push(
-              <li key={month} className="appartment-link">
-                  <Link to={`/bills/year/${this.state.year}/month/${month}`} onClick={this.setMonth.bind(this, {month})}>{ monthName }</Link>
-              </li>
-            );
-        }
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
             year: nextProps.match.params.year,
             month: nextProps.match.params.month
-        });
+        }, this.update);
     }
 
     setYear(year) {
@@ -52,6 +40,21 @@ class OverallMonthlyBillsView extends Component {
 
     update() {
         let self = this;
+
+        this.months_elements = [];
+
+        let classCurrent = '';
+
+        for (let month in this.MONTH_NAMES) {
+            let monthName = this.MONTH_NAMES[month];
+            classCurrent = (Number(month) === Number(this.state.month)) ? 'current' : '';
+
+            this.months_elements.push(
+              <li key={month} className={`month-link ${classCurrent}`}>
+                  <Link to={`/bills/year/${this.state.year}/month/${month}`} onClick={this.setMonth.bind(this, {month})}>{ monthName }</Link>
+              </li>
+            );
+        }
 
         Api.getMonthlyBills(this.state.year, this.state.month)
           .then(data => {
